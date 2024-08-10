@@ -1,0 +1,5 @@
+INVALID_EBAY_URL = "The URL provided is not a valid eBay listing URL."
+FAILED_PARSE_EBAY_LISTING = "We were unable to parse the listing"
+LISTING_ALREADY_EXISTS = "Ebay Listing Already Exists"
+NEW_LISTING_CREATED = "You Have Sucessfully Created A New Listing"
+FAILED_TO_CREATE_LISTING = "There was a problem creating a listing"
