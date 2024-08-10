@@ -51,6 +51,8 @@ def create_listing_watch(
         listing_details, image_url = parser.parse_ebay_listing(listing.url)
         title, country, currency, price = listing_details
 
+        print(listing.url)
+
         new_listing = EbayListing(
             listing_name=title,
             image_url=image_url,
@@ -75,6 +77,16 @@ def create_listing_watch(
         return client_side_error(e.detail)
     except Exception as e:
         return internal_server_error(user_msg=messages.FAILED_TO_CREATE_LISTING, error=str(e))
+    
+
+
+@app.get("/",response_class=ORJSONResponse)
+def get_all_listings(current_db:Session = Depends(get_db)):
+    listings = current_db.query(EbayListing).all()
+    return send_data_with_info(
+        info=messages.GET_LISTINGS_SUCCESS,
+        data=[ebay_listing_transformer(listing) for listing in listings]
+    )
     
 
 
