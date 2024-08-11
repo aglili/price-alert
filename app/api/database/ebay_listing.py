@@ -1,6 +1,8 @@
+from sqlalchemy import Column, Enum, Float, String
+
 from app.api.database.base_model import BaseModel
-from sqlalchemy import Column, String, Float, Enum
 from app.api.utils.enums import ListingStatus
+
 
 class EbayListing(BaseModel):
     __tablename__ = "ebay_listing"

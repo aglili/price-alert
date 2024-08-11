@@ -1,7 +1,6 @@
 from fastapi.responses import ORJSONResponse
 
 
-
 def send_data_with_info(data, info: str, status_code: int = 200):
     return ORJSONResponse(
         status_code=status_code,

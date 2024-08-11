@@ -6,3 +6,11 @@ ruff:
 
 fix:	
 	@ruff check ./app --fix
+
+
+isort:
+	@isort ./app
+
+
+fmt:
+	@black ./app

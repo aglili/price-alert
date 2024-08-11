@@ -1,6 +1,5 @@
 from app.api.utils.ebay_scrape import ParseEbayListing
 
-
 parser = ParseEbayListing()
 
 
