@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ebay Listings</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Spinner styles */
+      .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #3498db;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+      <h1 class="text-3xl font-bold mb-8 text-center">Ebay Listings</h1>
+
+      <div
+        id="toast"
+        class="fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded shadow-md hidden"
+      ></div>
+
+      <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 relative">
+        <h2 class="text-xl font-semibold mb-4">Add New Listing</h2>
+        <form id="listing-form" class="space-y-4" action="/" method="post">
+          <div>
+            <label class="block text-gray-700 font-bold mb-2" for="listing-url"
+              >Listing URL</label
+            >
+            <input
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="listing-url"
+              name="url"
+              type="text"
+              placeholder="Enter Ebay Listing URL"
+            />
+          </div>
+          <div class="flex items-center justify-between">
+            <button
+              id="submit-btn"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              type="submit"
+            >
+              Add Listing
+            </button>
+            <div id="spinner" class="spinner hidden"></div>
+          </div>
+        </form>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for listing in listings %}
+        <div class="bg-white shadow-md rounded p-4">
+          <img
+            src="{{ listing.image_url }}"
+            alt="{{ listing.listing_name }}"
+            class="w-full h-48 object-cover rounded-t"
+          />
+          <h3 class="text-xl font-semibold mt-4">{{ listing.listing_name }}</h3>
+          <p class="text-gray-700 mt-2">
+            Price: {{ listing.currency }} {{ listing.entry_price }}
+          </p>
+          <p class="text-gray-700">Country: {{ listing.country }}</p>
+          <p class="text-gray-700 mt-2">
+            Status:
+            <span
+              class="inline-block px-2 py-1 text-white font-semibold rounded {% if listing.status.value == 'available' %} bg-green-500 {% else %} bg-red-500 {% endif %}"
+            >
+              {{ listing.status.value.capitalize() }}
+            </span>
+          </p>
+          <a
+            href="{{ listing.listing_url }}"
+            target="_blank"
+            class="inline-block mt-4"
+          >
+            <button
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              View Listing
+            </button>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+
+
+      <div class="flex justify-center mt-8">
+        {% if page_number > 1 %}
+        <a
+          href="?page_number={{ page_number - 1 }}&page_size={{ page_size }}"
+          class="px-4 py-2 bg-blue-500 text-white rounded"
+          >Previous</a
+        >
+        {% endif %} {% for page in range(1, total_pages + 1) %}
+        <a
+          href="?page_number={{ page }}&page_size={{ page_size }}"
+          class="px-4 py-2 ml-2 {{ 'bg-blue-700' if page == page_number else 'bg-blue-500' }} text-white rounded"
+          >{{ page }}</a
+        >
+        {% endfor %} {% if page_number < total_pages %}
+        <a
+          href="?page_number={{ page_number + 1 }}&page_size={{ page_size }}"
+          class="px-4 py-2 bg-blue-500 text-white rounded ml-4"
+          >Next</a
+        >
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("listing-form")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const url = document.getElementById("listing-url").value;
+          const submitButton = document.getElementById("submit-btn");
+          const spinner = document.getElementById("spinner");
+          const toast = document.getElementById("toast");
+
+          // Show the loading spinner
+          spinner.classList.remove("hidden");
+          submitButton.disabled = true;
+
+          try {
+            const response = await fetch("/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({ url }),
+            });
+
+            if (response.status === 409) {
+              throw new Error("Listing already exists");
+            } else if (!response.ok) {
+              throw new Error("Failed to create listing");
+            }
+
+            // Show success toast
+            toast.textContent = "New listing created successfully!";
+            toast.classList.remove("hidden");
+            toast.classList.remove("bg-red-500");
+            toast.classList.add("bg-green-500");
+            setTimeout(() => {
+              toast.classList.add("hidden");
+            }, 3000);
+
+            // Reload the page to display the new listing
+            window.location.reload();
+          } catch (error) {
+            // Show error toast
+            toast.textContent = error.message;
+            toast.classList.remove("hidden");
+            toast.classList.remove("bg-green-500");
+            toast.classList.add("bg-red-500");
+            setTimeout(() => {
+              toast.classList.add("hidden");
+            }, 3000);
+          } finally {
+            // Hide the spinner and enable the submit button
+            spinner.classList.add("hidden");
+            submitButton.disabled = false;
+          }
+        });
+    </script>
+  </body>
+</html>

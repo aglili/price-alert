@@ -5,4 +5,4 @@ ruff:
 	@ruff check ./app
 
 fix:	
-	@ruff ./app --fix
+	@ruff check ./app --fix
